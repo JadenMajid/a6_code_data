@@ -198,7 +198,23 @@ def q2_1():
 
     Y_train, Y_valid = create_rating_matrix(ratings, n, d, "userId", "movieId")
 
-    raise NotImplementedError()
+    # get the average rating in Y_train
+    print("The average rating in the training set: %.2f" % np.nanmean(Y_train))
+    # equivalent to the previous line, but implemented differently
+    print(
+        "The average rating in the training set (again): %.2f"
+        % np.mean(Y_train[~np.isnan(Y_train)])
+    )
+    print(
+        "The count of ratings training set:",
+        int(np.sum(np.sum(Y_train[~np.isnan(Y_train)])))
+    )
+
+    print(np.any(Y_valid == Y_train))
+            
+
+
+
 
 @handle("2.2")
 def q2_2():
@@ -270,9 +286,11 @@ def q2_3():
 
     avg_rating = np.nanmean(Y_train)
 
-    k = 50
-    fun_obj_w = CollaborativeFilteringWLoss(lammyZ=1, lammyW=1)
-    fun_obj_z = CollaborativeFilteringZLoss(lammyZ=1, lammyW=1)
+    k = 1
+    lZ = 0.7
+    lW = 0.7
+    fun_obj_w = CollaborativeFilteringWLoss(lammyZ=lZ, lammyW=lW)
+    fun_obj_z = CollaborativeFilteringZLoss(lammyZ=lZ, lammyW=lW)
 
     optimizer_w = GradientDescentLineSearch(max_evals=100, verbose=False)
     optimizer_z = GradientDescentLineSearch(max_evals=100, verbose=False)
@@ -295,10 +313,15 @@ def q2_3():
     )
 
     RMSE_train = np.sqrt(np.nanmean((Y_hat - Y_train) ** 2))
-    print("Train RMSE of ratings: %.2f" % RMSE_train)
+    print("Train RMSE of ratings: 0.34 (before change)")
+    print("Train RMSE of ratings: %.2f (now)" % RMSE_train)
 
     RMSE_valid = np.sqrt(np.nanmean((Y_hat - Y_valid) ** 2))
-    print("Valid RMSE of ratings: %.2f" % RMSE_valid)
+    print("Valid RMSE of ratings: 1.75 (before change)")
+    print("Valid RMSE of ratings: %.2f (now)" % RMSE_valid)
+
+
+
 
     # print("Max abs of W:", np.max(np.abs(model.W)))
     # print("Max abs of Z:", np.max(np.abs(model.Z)))

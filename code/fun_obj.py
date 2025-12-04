@@ -331,7 +331,22 @@ class CollaborativeFilteringZLoss(FunObj):
         self.lammyW = lammyW
 
     def evaluate(self, z, W, Y):
-        pass
+        n, d = Y.shape
+        k, _ = W.shape
+        Z = z.reshape(n, k)
+
+        # replace NaNs (missing ratings) with zeros so they don't contribute
+        R = np.nan_to_num(Z @ W - Y)
+
+        f = 0.5 * np.sum(R ** 2) + \
+            self.lammyW * np.sum(np.abs(W)) + \
+            self.lammyZ * np.sum(np.abs(Z))
+
+        # Gradient w.r.t. Z: d(1/2 ||R||^2)/dZ = R @ W.T
+        # Add L1 regularization subgradient for Z: lammyZ * sign(Z)
+        g = R @ W.T + self.lammyZ * np.sign(Z)
+
+        return f, g.flatten()
 
 
 class CollaborativeFilteringWLoss(FunObj):
@@ -340,7 +355,23 @@ class CollaborativeFilteringWLoss(FunObj):
         self.lammyW = lammyW
 
     def evaluate(self, w, Z, Y):
-        pass
+        n, d = Y.shape
+        _, k = Z.shape
+        W = w.reshape(k, d)
+
+        # replace NaNs (missing ratings) with zeros so they don't contribute
+        R = np.nan_to_num(Z @ W - Y)
+        # print("Z\n",Z)
+
+        f = 0.5 * np.sum(R ** 2) + \
+            self.lammyW * np.sum(np.abs(W)) + \
+            self.lammyZ * np.sum(np.abs(Z))
+
+        # Gradient w.r.t. W: d(1/2 ||R||^2)/dW = Z.T @ R
+        # Add L1 regularization subgradient for W: lammyW * sign(W)
+        g = Z.T @ R + self.lammyW * np.sign(W)
+
+        return f, g.flatten()
 
 
 class RobustPCAFeaturesLoss(FunObj):
