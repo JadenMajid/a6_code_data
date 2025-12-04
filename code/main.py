@@ -207,10 +207,22 @@ def q2_1():
     )
     print(
         "The count of ratings training set:",
-        int(np.sum(np.sum(Y_train[~np.isnan(Y_train)])))
+        int(np.sum(np.sum(np.nan_to_num(Y_train))))
+    )
+    print(
+        "The count of ratings valid set:",
+        int(np.sum(np.sum(np.nan_to_num(Y_valid))))
     )
 
-    print(np.any(Y_valid == Y_train))
+    # 1. Element-wise equality check (returns False where either is nan)
+    equality_mask = np.equal(Y_train, Y_valid)
+
+    # 2. Create a mask where NEITHER element is NaN (This explicitly enforces the rule)
+    not_nan_mask = np.logical_and(~np.isnan(Y_train), ~np.isnan(Y_valid))
+
+    # 3. Combine the two: True only if they are equal AND neither is nan
+    result_2d = np.logical_and(equality_mask, not_nan_mask)
+    print("overlap in valid and train: ", np.any(result_2d))
             
 
 
